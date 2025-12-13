@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+
+# Local config
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Generated files
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Secrets
+**/google_maps_api.xml
