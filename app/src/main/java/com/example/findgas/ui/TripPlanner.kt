@@ -8,10 +8,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +45,7 @@ import com.example.findgas.ui.theme.FindGasTheme
 import kotlinx.coroutines.launch
 
 // Function for the Trip Planner
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripPlannerView(navController: NavController, mapsViewModel: MapsViewModel) {
 
@@ -46,118 +58,130 @@ fun TripPlannerView(navController: NavController, mapsViewModel: MapsViewModel) 
     val context = LocalContext.current
     val currentLocation by mapsViewModel.currentLocation.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Text(
-                text = "Roadtrip Planner",
-                fontSize = 24.sp
-            )
-
-            // Input for destination
-            TextField(
-                value = destinationVal,
-                onValueChange = {destinationVal = it},
-                label = {Text("Enter your destination:")},
-                modifier = Modifier.fillMaxWidth()
-            )
-            // Input for how much Fuel currently in the car
-            TextField(
-                value = currentFuel,
-                onValueChange = {currentFuel = it},
-                label = {Text("How much fuel do you have (in Liters):")},
-                modifier = Modifier.fillMaxWidth()
-            )
-            // Input for how much the maximum amount of fuel is in the car
-            TextField(
-                value = maxFuel,
-                onValueChange = {maxFuel = it},
-                label = {Text("What is your maximum fuel (in Liters):")},
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            TextField(
-                value = consumption,
-                onValueChange = {consumption = it},
-                label = {Text("Litre per 10km:")},
-                modifier = Modifier.fillMaxWidth()
-            )
-            // Confirmation button
-            Button(onClick = {
-                val currentFuelVal = currentFuel.toDoubleOrNull()
-                val maxFuelVal = maxFuel.toDoubleOrNull()
-                val consumptionVal = consumption.toDoubleOrNull()
-
-                if (destinationVal.isBlank()) {
-                    Toast.makeText(context, "Please enter a destination.", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (currentFuelVal == null || maxFuelVal == null || consumptionVal == null) {
-                    Toast.makeText(context, "Please enter valid numbers for fuel and consumption.", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (currentFuelVal < 0 || maxFuelVal < 0 || consumptionVal < 0) {
-                    Toast.makeText(context, "Fuel and consumption values cannot be negative.", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (currentFuelVal > maxFuelVal) {
-                    Toast.makeText(context, "Current fuel cannot be greater than max fuel.", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                if (consumptionVal == 0.0) {
-                    Toast.makeText(context, "Consumption cannot be zero.", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-
-                scope.launch {
-                    if (currentLocation == null) {
-                        Toast.makeText(context, "Could not get current location.", Toast.LENGTH_SHORT).show()
-                        return@launch
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Roadtrip Planner") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-
-                    val destination = mapsViewModel.geocodeAddress(destinationVal)
-                    if (destination == null) {
-                        Toast.makeText(context, "Could not find destination address.", Toast.LENGTH_SHORT).show()
-                        return@launch
-                    }
-
-                    mapsViewModel.setDestinationAddress(destinationVal)
-                    val success = mapsViewModel.planTrip(
-                        currentLocation!!,
-                        destination,
-                        currentFuelVal,
-                        maxFuelVal,
-                        consumptionVal
-                    )
-
-                    if (success) {
-                        navController.navigate(Routes.HomeScreen.route)
-                    } else {
-                        Toast.makeText(context, "No route could be planned for the trip.", Toast.LENGTH_SHORT).show()
-                        mapsViewModel.setDestinationAddress(null)
-                    }
-                }
-
-            },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Green, contentColor = Color.Black)
-            ) {
-                Text("Plan")
-            }
+                })
         }
+    ) {
+        Box(modifier = Modifier.fillMaxSize().padding(it)) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = destinationVal,
+                            onValueChange = {destinationVal = it},
+                            label = {Text("Enter your destination:")},
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) }
+                        )
+                        OutlinedTextField(
+                            value = currentFuel,
+                            onValueChange = {currentFuel = it},
+                            label = {Text("Current fuel (Liters):")},
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = { Icon(Icons.Default.Favorite, contentDescription = null) }
+                        )
+                        OutlinedTextField(
+                            value = maxFuel,
+                            onValueChange = {maxFuel = it},
+                            label = {Text("Maximum fuel (Liters):")},
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = { Icon(Icons.Default.Favorite, contentDescription = null) }
+                        )
 
-        Text(
-            text = "Disclaimer: Trip planner currently only supports gas stations. Electric vehicle support is coming soon.",
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp)
-                .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.7f))
-                .padding(8.dp),
-            color = Color.White,
-            textAlign = TextAlign.Center
-        )
+                        OutlinedTextField(
+                            value = consumption,
+                            onValueChange = {consumption = it},
+                            label = {Text("Litre per 10km:")},
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) }
+                        )
+                    }
+                }
+
+                Button(onClick = {
+                    val currentFuelVal = currentFuel.toDoubleOrNull()
+                    val maxFuelVal = maxFuel.toDoubleOrNull()
+                    val consumptionVal = consumption.toDoubleOrNull()
+
+                    if (destinationVal.isBlank()) {
+                        Toast.makeText(context, "Please enter a destination.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (currentFuelVal == null || maxFuelVal == null || consumptionVal == null) {
+                        Toast.makeText(context, "Please enter valid numbers for fuel and consumption.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (currentFuelVal < 0 || maxFuelVal < 0 || consumptionVal < 0) {
+                        Toast.makeText(context, "Fuel and consumption values cannot be negative.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (currentFuelVal > maxFuelVal) {
+                        Toast.makeText(context, "Current fuel cannot be greater than max fuel.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (consumptionVal == 0.0) {
+                        Toast.makeText(context, "Consumption cannot be zero.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    scope.launch {
+                        if (currentLocation == null) {
+                            Toast.makeText(context, "Could not get current location.", Toast.LENGTH_SHORT).show()
+                            return@launch
+                        }
+
+                        val destination = mapsViewModel.geocodeAddress(destinationVal)
+                        if (destination == null) {
+                            Toast.makeText(context, "Could not find destination address.", Toast.LENGTH_SHORT).show()
+                            return@launch
+                        }
+
+                        mapsViewModel.setDestinationAddress(destinationVal)
+                        val success = mapsViewModel.planTrip(
+                            currentLocation!!,
+                            destination,
+                            currentFuelVal,
+                            maxFuelVal,
+                            consumptionVal
+                        )
+
+                        if (success) {
+                            navController.navigate(Routes.HomeScreen.route)
+                        } else {
+                            Toast.makeText(context, "No route could be planned for the trip.", Toast.LENGTH_SHORT).show()
+                            mapsViewModel.setDestinationAddress(null)
+                        }
+                    }
+
+                },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green, contentColor = Color.Black)
+                ) {
+                    Text("Plan Trip")
+                }
+            }
+
+            Text(
+                text = "Disclaimer: Trip planner currently only supports gas stations. Electric vehicle support is coming soon.",
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp)
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(8.dp),
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 
 }
