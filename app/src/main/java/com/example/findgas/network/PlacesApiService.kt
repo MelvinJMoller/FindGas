@@ -1,5 +1,6 @@
-package com.example.findgas
+package com.example.findgas.network
 
+import com.example.findgas.data.PlacesResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

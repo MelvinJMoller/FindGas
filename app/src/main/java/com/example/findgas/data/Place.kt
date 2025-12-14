@@ -1,4 +1,4 @@
-package com.example.findgas
+package com.example.findgas.data
 
 import com.google.gson.annotations.SerializedName
 

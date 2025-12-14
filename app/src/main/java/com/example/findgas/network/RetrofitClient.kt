@@ -1,4 +1,4 @@
-package com.example.findgas
+package com.example.findgas.network
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

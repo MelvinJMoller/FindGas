@@ -1,8 +1,11 @@
-package com.example.findgas
+package com.example.findgas.ui.map
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.findgas.BuildConfig
+import com.example.findgas.data.PlaceResult
+import com.example.findgas.network.RetrofitClient
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch

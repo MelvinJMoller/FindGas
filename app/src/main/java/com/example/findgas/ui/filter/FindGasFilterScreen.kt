@@ -1,29 +1,15 @@
-package com.example.findgas
+package com.example.findgas.ui.filter
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,15 +23,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.findgas.ui.map.MapFilter
+import com.example.findgas.ui.map.MapsViewModel
 import com.example.findgas.ui.theme.FindGasTheme
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 val itemChecked = null
 data class DropDownItem(val text: String)
@@ -57,8 +40,7 @@ fun DropdownMenuWithDetails(
     vm: MapsViewModel,
     anchor: @Composable () -> Unit,
 ) {
-    val activity = LocalActivity.current
-    var selectedItem by remember { mutableStateOf<MapFilter?>(null) }
+    var selectedItem by remember { mutableStateOf(MapFilter.GasStations) }
     val context = LocalContext.current
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val items = listOf(MapFilter.GasStations, MapFilter.Electric, MapFilter.Workshops, MapFilter.Washes, MapFilter.Rentals,)
