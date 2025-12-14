@@ -135,7 +135,7 @@ fun FindGasBar(navController: NavController, vm: MapsViewModel, content: @Compos
                 navController.navigate(route = Routes.TripPlanner.route)
             },
                 modifier = Modifier.width(120.dp).height(100.dp),
-                shape = RoundedCornerShape(topEnd = 70.dp),
+                shape = RectangleShape,
                 border = BorderStroke(1.dp, Color.Black),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF8f3306)
