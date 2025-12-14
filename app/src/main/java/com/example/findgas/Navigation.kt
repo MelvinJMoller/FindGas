@@ -22,7 +22,7 @@ fun Navigation(navController: NavHostController, vm: MapsViewModel) {
             ProfileView(navController)
         }
         composable(Routes.TripPlanner.route) {
-            TripPlannerView(navController)
+            TripPlannerView(navController, vm)
         }
     }
 }

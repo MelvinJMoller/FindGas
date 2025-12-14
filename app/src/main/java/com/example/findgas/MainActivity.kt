@@ -1,5 +1,7 @@
 package com.example.findgas
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,9 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,13 +38,15 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.Polyline
+import java.net.URLEncoder
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +78,6 @@ fun MapsView(navController: NavHostController, vm: MapsViewModel) {
     val context = LocalContext.current
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val trelleborg = LatLng(55.3722, 13.1811)
-    val pointZero = (LatLng(0.0, 0.0))
     val gasStations by vm.stations.collectAsState()
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(trelleborg, 17f)
@@ -83,6 +90,10 @@ fun MapsView(navController: NavHostController, vm: MapsViewModel) {
     )
 
     val routePoints by vm.routePoints.collectAsState()
+    val destinationAddress by vm.destinationAddress.collectAsState()
+    val waypoints by vm.waypoints.collectAsState()
+    val currentLocation by vm.currentLocation.collectAsState()
+    val gasStationStops by vm.gasStationStops.collectAsState()
 
     // Permission launcher
     val launcher = rememberLauncherForActivityResult(
@@ -100,6 +111,7 @@ fun MapsView(navController: NavHostController, vm: MapsViewModel) {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
                         val latLng = LatLng(location.latitude, location.longitude)
+                        vm.setCurrentLocation(latLng)
                         cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 16f)
 
                         vm.fetchStations(
@@ -122,68 +134,79 @@ fun MapsView(navController: NavHostController, vm: MapsViewModel) {
         launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    // Composable for Google maps API
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState,
-        properties = properties,
-        uiSettings = MapUiSettings(zoomControlsEnabled = false)
-    ) {
-        gasStations.forEach { station ->
-            Marker(
-                state = MarkerState(
-                    position = LatLng(
-                        station.geometry.location.lat,
-                        station.geometry.location.lng
-                    )
-                ),
-                title = station.name
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Composable for Google maps API
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            properties = properties,
+            uiSettings = MapUiSettings(zoomControlsEnabled = false)
+        ) {
+            gasStations.forEach { station ->
+                Marker(
+                    state = MarkerState(
+                        position = LatLng(
+                            station.geometry.location.lat,
+                            station.geometry.location.lng
+                        )
+                    ),
+                    title = station.name
+                )
+            }
+
+            gasStationStops.forEach { stop ->
+                Marker(
+                    state = MarkerState(
+                        position = LatLng(
+                            stop.geometry.location.lat,
+                            stop.geometry.location.lng
+                        )
+                    ),
+                    title = stop.name,
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                )
+            }
+
+            if (routePoints.isNotEmpty()) {
+                Polyline(
+                    points = routePoints,
+                    color = Color.Blue,
+                    width = 8f
+                )
+            }
         }
 
-        if (routePoints.isNotEmpty()) {
-            Polyline(
-                points = routePoints,
-                color = Color.Blue,
-                width = 8f
-            )
+        if (routePoints.isNotEmpty() && destinationAddress != null) {
+            Button(
+                onClick = {
+                    val origin = currentLocation
+                    val destination = destinationAddress
+                    if (origin != null && destination != null) {
+                        val waypointsString = waypoints.joinToString("|") { "${it.latitude},${it.longitude}" }
+
+                        val encodedDestination = URLEncoder.encode(destination, "UTF-8")
+
+                        // The waypoints string of lat,lng|lat,lng doesn't need encoding. The pipes are separators.
+                        val url = "https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=$encodedDestination&waypoints=$waypointsString"
+
+                        val gmmIntentUri = Uri.parse(url)
+                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                        mapIntent.setPackage("com.google.android.apps.maps")
+                        context.startActivity(mapIntent)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Blue,
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Start Navigation")
+            }
         }
     }
-}
 
-fun decodePolyline(encoded: String): List<LatLng> {
-    val poly = ArrayList<LatLng>()
-    var index = 0
-    val len = encoded.length
-    var lat = 0
-    var lng = 0
-
-    while (index < len) {
-        var b: Int
-        var shift = 0
-        var result = 0
-        do {
-            b = encoded[index++].code - 63
-            result = result or ((b and 0x1f) shl shift)
-            shift += 5
-        } while (b >= 0x20)
-        val dLat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-        lat += dLat
-
-        shift = 0
-        result = 0
-        do {
-            b = encoded[index++].code - 63
-            result = result or ((b and 0x1f) shl shift)
-            shift += 5
-        } while (b >= 0x20)
-        val dLng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-        lng += dLng
-
-        poly.add(LatLng(lat / 1E5, lng / 1E5))
-    }
-
-    return poly
 }
 
 @Preview(showBackground = true)

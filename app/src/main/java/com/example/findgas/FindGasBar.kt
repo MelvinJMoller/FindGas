@@ -118,7 +118,7 @@ fun FindGasBar(navController: NavController, vm: MapsViewModel, content: @Compos
                                 val result = vm.getRoute(userPos, dest)
 
                                 withContext(Dispatchers.Main) {
-                                    vm.setRoute(result)
+                                    vm.setRoute(result?.points ?: emptyList())
                                 }
                             }
                         }

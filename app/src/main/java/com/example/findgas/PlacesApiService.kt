@@ -8,7 +8,7 @@ interface PlacesApiService {
     @GET("nearbysearch/json")
     suspend fun getNearbyGasStations(
         @Query("location") location: String,  // "lat,lng"
-        @Query("radius") radius: Int = 3000, // in meters
+        @Query("radius") radius: Int = 50000, // in meters
         @Query("type") type: String = "gas_station",
         @Query("key") apiKey: String
     ): PlacesResponse
@@ -17,7 +17,7 @@ interface PlacesApiService {
     @GET("nearbysearch/json")
     suspend fun getNearbyElectricChargers(
         @Query("location") location: String,  // "lat,lng"
-        @Query("radius") radius: Int = 3000, // in meters
+        @Query("radius") radius: Int = 50000, // in meters
         @Query("type") type: String = "electric_vehicle_charging_station",
         @Query("key") apiKey: String
     ): PlacesResponse
@@ -26,7 +26,7 @@ interface PlacesApiService {
     @GET("nearbysearch/json")
     suspend fun getNearbyWorkshops(
         @Query("location") location: String,  // "lat,lng"
-        @Query("radius") radius: Int = 3000, // in meters
+        @Query("radius") radius: Int = 50000, // in meters
         @Query("type") type: String = "car_repair",
         @Query("key") apiKey: String
     ): PlacesResponse
@@ -35,7 +35,7 @@ interface PlacesApiService {
     @GET("nearbysearch/json")
     suspend fun getNearbyRentals(
         @Query("location") location: String,  // "lat,lng"
-        @Query("radius") radius: Int = 3000, // in meters
+        @Query("radius") radius: Int = 50000, // in meters
         @Query("type") type: String = "car_rental",
         @Query("key") apiKey: String
     ): PlacesResponse
@@ -44,10 +44,8 @@ interface PlacesApiService {
     @GET("nearbysearch/json")
     suspend fun getNearbyCarWashes(
         @Query("location") location: String,  // "lat,lng"
-        @Query("radius") radius: Int = 3000, // in meters
+        @Query("radius") radius: Int = 50000, // in meters
         @Query("type") type: String = "car_wash",
         @Query("key") apiKey: String
     ): PlacesResponse
 }
-
-// Other Types: car_repair, car_dealer, car_rental, car_wash, electric_vehicle_charging_station
