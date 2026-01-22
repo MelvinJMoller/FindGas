@@ -1,6 +1,7 @@
 package com.example.findgas.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -68,7 +69,7 @@ fun TripPlannerView(navController: NavController, mapsViewModel: MapsViewModel) 
                 })
         }
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(it)) {
+        Box(modifier = Modifier.fillMaxSize().padding(it).background(Color.Red.copy(alpha = 0.5f))) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -164,7 +165,8 @@ fun TripPlannerView(navController: NavController, mapsViewModel: MapsViewModel) 
 
                 },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green, contentColor = Color.Black)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green, contentColor = Color.Black),
+                    border = BorderStroke(1.dp, Color.Black)
                 ) {
                     Text("Plan Trip")
                 }
